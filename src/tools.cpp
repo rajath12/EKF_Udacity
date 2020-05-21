@@ -22,7 +22,8 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
      return rmse;
   }
   // add up values of squared errors for all data points
-  for (unsigned int i = 0; i < estimations.size(); ++i){ //uning unsigned int as negative values are not needed
+  for (unsigned int i = 0; i < estimations.size(); ++i)
+  { //uning unsigned int as negative values are not needed
      VectorXd residual = estimations[i] - ground_truth[i];
      residual = residual.array()*residual.array();
      rmse += residual;
@@ -34,16 +35,15 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   return rmse;
 }
 
+// Jacobian function tested and okayed
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
-  /**
-   * Calculate a Jacobian here.
-   */
+
   MatrixXd Hj(3,4);
-  // extracting state values
-  float px = x_state[0];
-  float py = x_state[1];
-  float vx = x_state[3];
-  float vy = x_state[4];
+  // extracting state parameters
+  float px = x_state(0); // round brackets needed (not square for indexing)
+  float py = x_state(1);
+  float vx = x_state(2);
+  float vy = x_state(3);
   
   // repeating calculations for faster matrix calculation
   float c1 = px*px + py*py;
@@ -51,15 +51,16 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   float c3 = c1 * c2;
 
   // addressing zero error issues
-  if (c1 < 0.0001){
+  if (fabs(c1) < 0.0001) // calculate abs value to take care of all variations
+  {
      std::cout << "Error: Division by zero" << std::endl;
      return Hj;
   }
   
   // Matrix Hj calculation based on Jacobian matrix equations
-  Hj << px/c2,py/c2,0,0,
-        -py/c1,px/c1,0,0,
-        py*(vx*py - vy*px)/c3,px*(vy*px - vx*py)/c3,px/c2,py/c2;
+  Hj << px/c2, py/c2, 0, 0,
+        -py/c1, px/c1, 0, 0,
+        py*(vx*py - vy*px)/c3, px*(vy*px - vx*py)/c3, px/c2, py/c2;
 
   return Hj;
 }
