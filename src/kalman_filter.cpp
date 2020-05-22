@@ -37,8 +37,12 @@ void KalmanFilter::Update(const VectorXd &z) {
    */
   // for lidar measurements
 
-  MatrixXd I = MatrixXd::Identity(x_.size(),x_.size());
-  MatrixXd y = z - H_ * x_;
+  // identity matrix
+  long x_size = x_.size();
+  MatrixXd I = MatrixXd::Identity(x_size,x_size);
+
+  // KF equations
+  VectorXd y = z - H_ * x_;
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd S_inv = S.inverse();
@@ -46,7 +50,7 @@ void KalmanFilter::Update(const VectorXd &z) {
 
   // measurement update
   x_ = x_ + K * y;
-  P_ = (I - K*H_) *P_;
+  P_ = (I - K*H_) * P_;
 
 }
 
@@ -68,10 +72,24 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     float rho_dot = (x_(0)*x_(2) + x_(1)*x_(3))/rho;
   }
 
-  MatrixXd hx(3); // polar coordinate predictions for calculating error y
+  VectorXd hx(3); // polar coordinate predictions for calculating error y
   hx << rho, phi, rho_dot;
-  MatrixXd I = MatrixXd::Identity(x_.size(),x_.size());
-  MatrixXd y = z - hx;
+
+  // identity matrix
+  long x_size = x_.size();
+  MatrixXd I = MatrixXd::Identity(x_size,x_size);
+
+  // EKF equations
+  VectorXd y = z - hx;
+  // normalizing angle between -pi and pi
+  if( y(1) > M_PI ){
+    y(1)-= 2*M_PI;
+    } 
+  if( y(1) < -M_PI ){
+    y(1)+= 2*M_PI;
+    }
+  // while (y(1)> M_PI) y(1)-=2.*M_PI;
+  // while (y(1)<-M_PI) y(1)+=2.*M_PI;
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd S_inv = S.inverse();
@@ -79,5 +97,5 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
   // measurement update
   x_ = x_ + K * y;
-  P_ = (I - K*H_) *P_;
+  P_ = (I - K*H_) * P_;
 }
