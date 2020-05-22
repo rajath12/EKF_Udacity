@@ -31,7 +31,8 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 
   rmse = rmse/estimations.size(); // normalizing
   rmse = rmse.array().sqrt(); // final square root calculation
-
+  
+  std::cout << "rmse" << std::endl << rmse << std::endl;
   return rmse;
 }
 
