@@ -24,7 +24,7 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
 
 void KalmanFilter::Predict() {
   /**
-   * TODO: predict the state
+   * Predict the state
    */
   x_ = F_ * x_;
   MatrixXd Ft = F_.transpose();
@@ -33,7 +33,7 @@ void KalmanFilter::Predict() {
 
 void KalmanFilter::Update(const VectorXd &z) {
   /**
-   * TODO: update the state by using Kalman Filter equations
+   * Update the state by using Kalman Filter equations
    */
   // for lidar measurements
 
@@ -56,7 +56,7 @@ void KalmanFilter::Update(const VectorXd &z) {
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /**
-   * TODO: update the state by using Extended Kalman Filter equations
+   * Update the state by using Extended Kalman Filter equations
    */
   // for radar measurements
 
@@ -64,12 +64,12 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   // calculate rho, phi and rho_dot
   float rho = sqrt(x_(0)*x_(0) + x_(1)*x_(1));
   float phi = atan2(x_(1),x_(0));
-  float rho_dot; // zero case for rho needs to be dealt with
+  float rho_dot; // initializing rho_dot variable for zero rho case
   if (fabs(rho) < 0.0001)
   {
-    float rho_dot = 0;
+    rho_dot = 0;
   } else {
-    float rho_dot = (x_(0)*x_(2) + x_(1)*x_(3))/rho;
+    rho_dot = (x_(0)*x_(2) + x_(1)*x_(3))/rho;
   }
 
   VectorXd hx(3); // polar coordinate predictions for calculating error y
@@ -83,13 +83,12 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   VectorXd y = z - hx;
   // normalizing angle between -pi and pi
   if( y(1) > M_PI ){
-    y(1)-= 2*M_PI;
+    y(1) -= 2*M_PI;
     } 
   if( y(1) < -M_PI ){
-    y(1)+= 2*M_PI;
+    y(1) += 2*M_PI;
     }
-  // while (y(1)> M_PI) y(1)-=2.*M_PI;
-  // while (y(1)<-M_PI) y(1)+=2.*M_PI;
+
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd S_inv = S.inverse();
